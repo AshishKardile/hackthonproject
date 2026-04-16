@@ -1,0 +1,203 @@
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  role VARCHAR(50) NOT NULL DEFAULT 'student',
+  avatar VARCHAR(255) DEFAULT NULL,
+  department VARCHAR(100) DEFAULT NULL,
+  year_level VARCHAR(50) DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS wellness_entries (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  mood VARCHAR(50) NOT NULL,
+  stress_level INTEGER DEFAULT 0,
+  sleep_hours DECIMAL(3,1) DEFAULT NULL,
+  notes TEXT DEFAULT NULL,
+  entry_date DATE NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS academic_records (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  subject VARCHAR(100) NOT NULL,
+  grade VARCHAR(5) DEFAULT NULL,
+  score DECIMAL(5,2) DEFAULT NULL,
+  gpa DECIMAL(3,2) DEFAULT NULL,
+  semester VARCHAR(20) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS classes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name VARCHAR(100) NOT NULL,
+  code VARCHAR(20) NOT NULL UNIQUE,
+  teacher_id INTEGER NOT NULL,
+  schedule VARCHAR(255) DEFAULT NULL,
+  room VARCHAR(50) DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS enrollments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  class_id INTEGER NOT NULL,
+  student_id INTEGER NOT NULL,
+  enrolled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+  FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE (class_id, student_id)
+);
+
+CREATE TABLE IF NOT EXISTS attendance (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  class_id INTEGER NOT NULL,
+  student_id INTEGER NOT NULL,
+  status VARCHAR(50) NOT NULL DEFAULT 'present',
+  date DATE NOT NULL,
+  marked_by INTEGER DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+  FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (marked_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS assignments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  teacher_id INTEGER NOT NULL,
+  title VARCHAR(200) NOT NULL,
+  description TEXT DEFAULT NULL,
+  subject VARCHAR(100) NOT NULL,
+  file_url VARCHAR(255) DEFAULT NULL,
+  due_date DATETIME NOT NULL,
+  total_marks INTEGER DEFAULT 100,
+  status VARCHAR(50) DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS submissions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  assignment_id INTEGER NOT NULL,
+  student_id INTEGER NOT NULL,
+  content TEXT DEFAULT NULL,
+  file_url VARCHAR(255) DEFAULT NULL,
+  marks_obtained INTEGER DEFAULT NULL,
+  feedback TEXT DEFAULT NULL,
+  submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  graded_at TIMESTAMP DEFAULT NULL,
+  FOREIGN KEY (assignment_id) REFERENCES assignments(id) ON DELETE CASCADE,
+  FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE(assignment_id, student_id)
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  title VARCHAR(200) NOT NULL,
+  message TEXT NOT NULL,
+  type VARCHAR(50) DEFAULT 'info',
+  is_read BOOLEAN DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS counselor_bookings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  student_id INTEGER NOT NULL,
+  booking_date DATE NOT NULL,
+  booking_time TEXT NOT NULL,
+  reason TEXT,
+  status TEXT DEFAULT 'pending',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS objectives (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  subject TEXT NOT NULL,
+  content TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS wellness_records (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  student_id INTEGER NOT NULL,
+  mood TEXT NOT NULL,
+  stress_level INTEGER NOT NULL,
+  score INTEGER NOT NULL,
+  date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS teacher_subjects (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  teacher_id INTEGER NOT NULL,
+  subject_name VARCHAR(100) NOT NULL,
+  FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE(teacher_id, subject_name)
+);
+
+CREATE TABLE IF NOT EXISTS gamification (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL UNIQUE,
+  points INTEGER DEFAULT 0,
+  level INTEGER DEFAULT 1,
+  streak_days INTEGER DEFAULT 0,
+  last_activity_date DATE DEFAULT NULL,
+  badges TEXT DEFAULT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS announcements (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  admin_id INTEGER NOT NULL,
+  title VARCHAR(200) NOT NULL,
+  content TEXT NOT NULL,
+  target_audience VARCHAR(50) DEFAULT 'all',
+  is_pinned BOOLEAN DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS complaints (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  title VARCHAR(200) NOT NULL,
+  description TEXT NOT NULL,
+  status VARCHAR(50) DEFAULT 'open',
+  resolved_by INTEGER DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  resolved_at TIMESTAMP DEFAULT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (resolved_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  message TEXT NOT NULL,
+  response TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+INSERT INTO users (name, email, password, role, department) VALUES
+('System Admin', 'admin@eduwell.com', '$2a$10$tZ2.Q2xJg164Y0E9xXoF2uL4gE8M4Qc8fQJZT8j9vRjKQ1Zf1Wd2K', 'admin', 'Administration');
+
+INSERT INTO users (name, email, password, role, department) VALUES
+('Dr. Robert Smith', 'robert@eduwell.com', '$2a$10$tZ2.Q2xJg164Y0E9xXoF2uL4gE8M4Qc8fQJZT8j9vRjKQ1Zf1Wd2K', 'teacher', 'Computer Science'),
+('Prof. Lisa Johnson', 'lisa@eduwell.com', '$2a$10$tZ2.Q2xJg164Y0E9xXoF2uL4gE8M4Qc8fQJZT8j9vRjKQ1Zf1Wd2K', 'teacher', 'Mathematics');
+
+-- Students (password: VEDd@123 or student123)
+INSERT INTO users (name, email, password, role, department, year_level) VALUES
+('VedDangat', 'ved@eduwell.com', 'VEDd@123', 'student', 'Computer Science', '2nd Year'),
+('Sarah Johnson', 'sarah@eduwell.com', '$2a$10$6jM5Z8V5Z5Z5Z5Z5Z5Z5ZeKQKQKQKQKQKQKQKQKQKQKQKQKQKQKQK', 'student', 'Computer Science', '3rd Year'),
+('Alex Chen', 'alex@eduwell.com', '$2a$10$6jM5Z8V5Z5Z5Z5Z5Z5Z5ZeKQKQKQKQKQKQKQKQKQKQKQKQKQKQKQK', 'student', 'Computer Science', '2nd Year'),
+('Maya Patel', 'maya@eduwell.com', '$2a$10$tZ2.Q2xJg164Y0E9xXoF2uL4gE8M4Qc8fQJZT8j9vRjKQ1Zf1Wd2K', 'student', 'Electronics', '3rd Year');
