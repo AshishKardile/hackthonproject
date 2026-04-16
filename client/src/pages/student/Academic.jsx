@@ -145,7 +145,7 @@ export default function StudentAcademic() {
                   ) : (
                     <div style={{ display: 'flex', gap: '8px' }}>
                       {mat.file_url && mat.file_url !== 'mock_uploaded_file.pdf' ? (
-                        <a href={`http://localhost:5000/uploads/${mat.file_url}`} target="_blank" download className="btn btn-outline" style={{ flex: 1, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                        <a href={`/uploads/${mat.file_url}`} target="_blank" download className="btn btn-outline" style={{ flex: 1, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
                           <FiDownload /> Document
                         </a>
                       ) : (

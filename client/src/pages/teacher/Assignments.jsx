@@ -144,7 +144,7 @@ export default function TeacherAssignments() {
                     <span className="badge blue" style={{ marginBottom: 12, display: 'inline-block' }}>{a.type.toUpperCase()}</span>
                     {a.file_url && a.file_url !== 'mock_uploaded_file.pdf' && (
                        <div style={{ margin: '8px 0' }}>
-                         <a href={`http://localhost:5000/uploads/${a.file_url}`} target="_blank" download className="badge purple" style={{ textDecoration: 'none', cursor: 'pointer' }}>
+                         <a href={`/uploads/${a.file_url}`} target="_blank" download className="badge purple" style={{ textDecoration: 'none', cursor: 'pointer' }}>
                            📄 View Uploaded Document
                          </a>
                        </div>

@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 export default function StudentGamification() {
   const [xp, setXp] = useState(0); // Starts at 0
   const [streakDays, setStreakDays] = useState(0); // Starts at 0
 
+  const windowRefs = useRef({});
+
   const [gameTasks, setGameTasks] = useState([
-    { id: 1, title: 'Code Breaker (DSA)', xp: 150, completed: false },
-    { id: 2, title: 'SQL Syntax Solver', xp: 120, completed: false },
-    { id: 3, title: 'Algorithm Speed Run', xp: 200, completed: false },
-    { id: 4, title: 'Network Protocol Trivia', xp: 100, completed: false },
-    { id: 5, title: 'Math Puzzle Quest', xp: 80, completed: false },
+    { id: 1, title: 'Code Breaker (DSA)', xp: 150, completed: false, playing: false, link: 'https://www.hackerrank.com/domains/data-structures' },
+    { id: 2, title: 'SQL Syntax Solver', xp: 120, completed: false, playing: false, link: 'https://www.hackerrank.com/domains/sql' },
+    { id: 3, title: 'Algorithm Speed Run', xp: 200, completed: false, playing: false, link: 'https://www.hackerrank.com/domains/algorithms' },
+    { id: 4, title: 'Network Protocol Trivia', xp: 100, completed: false, playing: false, link: 'https://netsim.erinn.io/' },
+    { id: 5, title: 'Math Puzzle Quest', xp: 80, completed: false, playing: false, link: 'https://www.mathsisfun.com/puzzles/' },
   ]);
 
   const achievements = [
@@ -21,8 +23,18 @@ export default function StudentGamification() {
     { icon: '🧠', name: 'Genius', unlocked: xp >= 5000 },
   ];
 
-  const playTask = (id, reward) => {
-    setGameTasks(tasks => tasks.map(t => t.id === id ? { ...t, completed: true } : t));
+  const handlePlayGame = (id, link) => {
+    const newWindow = window.open(link, '_blank');
+    windowRefs.current[id] = newWindow;
+    setGameTasks(tasks => tasks.map(t => t.id === id ? { ...t, playing: true } : t));
+  };
+
+  const handleCompleteGame = (id, reward) => {
+    if (windowRefs.current[id]) {
+      windowRefs.current[id].close();
+      windowRefs.current[id] = null;
+    }
+    setGameTasks(tasks => tasks.map(t => t.id === id ? { ...t, completed: true, playing: false } : t));
     setXp(x => x + reward);
     if(streakDays === 0) setStreakDays(1);
   };
@@ -72,13 +84,24 @@ export default function StudentGamification() {
                   <p style={{ fontWeight: 600, fontSize: '0.95rem' }}>{t.title}</p>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: 4 }}>+ {t.xp} XP Points</p>
                 </div>
-                <button 
-                  className={`btn btn-sm ${t.completed ? '' : 'btn-primary'}`} 
-                  onClick={() => playTask(t.id, t.xp)}
-                  disabled={t.completed}
-                >
-                  {t.completed ? 'Completed' : 'Play Theme'}
-                </button>
+                {t.completed ? (
+                  <button className="btn btn-sm" disabled>Completed</button>
+                ) : t.playing ? (
+                  <button 
+                    className="btn btn-sm btn-primary" 
+                    style={{ background: 'var(--teal-500)', color: 'white', borderColor: 'var(--teal-500)' }} 
+                    onClick={() => handleCompleteGame(t.id, t.xp)}
+                  >
+                    Game Completed
+                  </button>
+                ) : (
+                  <button 
+                    className="btn btn-sm btn-primary" 
+                    onClick={() => handlePlayGame(t.id, t.link)}
+                  >
+                    Play Game
+                  </button>
+                )}
               </div>
             ))}
           </div>
